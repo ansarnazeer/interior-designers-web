@@ -17,7 +17,7 @@ const PLATES = [
 const SERVICES = [
   { n: "I", title: "Full interior architecture", note: "Structural and spatial planning alongside your architect, from first sketch to final coat of paint." },
   { n: "II", title: "Bespoke furniture and upholstery", note: "Pieces drawn and built to the room, upholstered in fabrics chosen for how they wear, not just how they photograph." },
-  { n: "III", title: "Antique sourcing and restoration", note: "A private network of dealers across England and France, with restoration overseen in-house." },
+  { n: "III", title: "Antique sourcing and restoration", note: "A private network of dealers across India, with restoration overseen in-house." },
   { n: "IV", title: "Single-room commissions", note: "For clients who want one room done properly rather than a whole house taken on at once." },
   { n: "V", title: "Snagging and styling", note: "The final layer — art hung, linens chosen, flowers placed — finished the week before you move back in." },
 ];
