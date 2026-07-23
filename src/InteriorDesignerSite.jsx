@@ -17,7 +17,7 @@ const PLATES = [
 const SERVICES = [
   { n: "I", title: "Full interior architecture", note: "Structural and spatial planning alongside your architect, from first sketch to final coat of paint." },
   { n: "II", title: "Bespoke furniture and upholstery", note: "Pieces drawn and built to the room, upholstered in fabrics chosen for how they wear, not just how they photograph." },
-  { n: "III", title: "Antique sourcing and restoration", note: "A private network of dealers across India, with restoration overseen in-house." },
+  { n: "III", title: "Antique sourcing and restoration", note: "A private network of dealers across England and France, with restoration overseen in-house." },
   { n: "IV", title: "Single-room commissions", note: "For clients who want one room done properly rather than a whole house taken on at once." },
   { n: "V", title: "Snagging and styling", note: "The final layer — art hung, linens chosen, flowers placed — finished the week before you move back in." },
 ];
@@ -30,7 +30,7 @@ function Wordmark({ dark }) {
       className={`text-[20px] tracking-[0.14em] uppercase ${dark ? "text-[#F3ECDD]" : "text-[#1C1B17]"}`}
       style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600 }}
     >
-      Jr <span className="text-[#B08D57]">Interior</span> 
+      Thornbury <span className="text-[#B08D57]">&amp;</span> Hale
     </span>
   );
 }
@@ -112,13 +112,13 @@ function Home({ setPage }) {
         <img src={IMG.hero} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ filter: "saturate(0.85) contrast(1.05)" }} />
         <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(31,51,40,0.35) 0%, rgba(28,27,23,0.55) 55%, rgba(20,24,20,0.88) 100%)" }} />
         <div className="relative max-w-6xl mx-auto w-full px-6 md:px-10 pb-20 pt-40">
-          <Eyebrow dark>Jr Interior design atelier &middot; est. 2026</Eyebrow>
+          <Eyebrow dark>Interior design atelier &middot; est. 2011</Eyebrow>
           <Display light className="text-[42px] md:text-[68px] max-w-3xl">
             Rooms with the weight of memory, built for how you live now.
           </Display>
           <Rule className="my-7" />
           <p className="max-w-xl text-[16px] md:text-[17px] text-[#F3ECDD]/85 leading-relaxed" style={{ fontFamily: "'Jost', sans-serif", fontWeight: 300 }}>
-            Jr Interior designs private residences, small hotels and single rooms — layering
+            Thornbury &amp; Hale designs private residences, small hotels and single rooms — layering
             inherited pieces with new work so a house reads as though it was always this way.
           </p>
           <div className="flex flex-wrap gap-4 mt-9">
@@ -256,15 +256,15 @@ function About() {
         </div>
         <div>
           <Eyebrow>The practice</Eyebrow>
-          <Display className="text-[34px] md:text-[44px] mb-6">About Jr Interior</Display>
+          <Display className="text-[34px] md:text-[44px] mb-6">About Thornbury &amp; Hale</Display>
           <p className="text-[15px] text-[#1C1B17]/75 leading-relaxed mb-5" style={{ fontFamily: "'Jost', sans-serif", fontWeight: 300 }}>
-            Founded in 2026 by Mohammed Ansar, the practice grew out of a shared
+            Founded in 2011 by Eleanor Thornbury and James Hale, the practice grew out of a shared
             frustration with interiors that looked finished on delivery day and dated within five
             years. We build rooms the way a good tailor builds a coat — for the specific body, meant
             to be let out and taken in as life changes, not replaced.
           </p>
           <p className="text-[15px] text-[#1C1B17]/75 leading-relaxed mb-8" style={{ fontFamily: "'Jost', sans-serif", fontWeight: 300 }}>
-            The studio takes on a small number of commissions each year across India,
+            The studio takes on a small number of commissions each year across England and Scotland,
             working directly with clients, architects and a long-standing network of makers.
           </p>
           <blockquote
@@ -281,11 +281,52 @@ function About() {
 
 function Contact() {
   const [form, setForm] = useState({ name: "", email: "", type: "Full house", message: "" });
+  const [website, setWebsite] = useState("");
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    setSent(true);
+    setError("");
+    setFieldErrors({});
+    setSending(true);
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, website }),
+      });
+
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        // no-op, handled below
+      }
+
+      if (res.status === 429) {
+        setError((data && data.error) || "Too many enquiries from this address. Please try again later.");
+        return;
+      }
+      if (res.status === 400 && data && data.errors) {
+        setFieldErrors(data.errors);
+        setError("Please check the highlighted fields and try again.");
+        return;
+      }
+      if (!res.ok) {
+        setError((data && data.error) || "Something went wrong sending your enquiry. Please try again.");
+        return;
+      }
+
+      setSent(true);
+    } catch {
+      setError("We couldn't reach the server. Please check your connection and try again.");
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -303,7 +344,7 @@ function Contact() {
           <div className="space-y-5 text-[14px]" style={{ fontFamily: "'Jost', sans-serif", fontWeight: 300 }}>
             <div>
               <p className="text-[#B08D57] tracking-[0.12em] uppercase text-[12px] mb-1">Studio</p>
-              <p className="text-[#F3ECDD]/80">Bondel, Mangalore</p>
+              <p className="text-[#F3ECDD]/80">14 Gracechurch Mews, Marylebone, London W1U</p>
             </div>
             <div>
               <p className="text-[#B08D57] tracking-[0.12em] uppercase text-[12px] mb-1">Hours</p>
@@ -311,8 +352,8 @@ function Contact() {
             </div>
             <div>
               <p className="text-[#B08D57] tracking-[0.12em] uppercase text-[12px] mb-1">Contact</p>
-              <p className="text-[#F3ECDD]/80">iamanasarr15@gmail.com</p>
-              <p className="text-[#F3ECDD]/80">+91 9019715042</p>
+              <p className="text-[#F3ECDD]/80">enquiries@thornburyandhale.co.uk</p>
+              <p className="text-[#F3ECDD]/80">+44 (0)20 7946 0192</p>
             </div>
           </div>
         </div>
@@ -328,7 +369,32 @@ function Contact() {
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+              {/* Honeypot: hidden from real users (off-screen, not display:none,
+                  so basic bots that skip display:none fields still get caught),
+                  excluded from tab order and autofill. */}
+              <div
+                aria-hidden="true"
+                style={{ position: "absolute", left: "-9999px", top: "-9999px", height: 0, width: 0, overflow: "hidden" }}
+              >
+                <label htmlFor="website">Website</label>
+                <input
+                  id="website"
+                  name="website"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                />
+              </div>
+
+              {error && (
+                <p className="text-[13px] text-[#5C2430] bg-[#5C2430]/10 border border-[#5C2430]/30 px-4 py-3" style={{ fontFamily: "'Jost', sans-serif" }}>
+                  {error}
+                </p>
+              )}
+
               <div className="grid md:grid-cols-2 gap-6">
                 <label className="block">
                   <span className="text-[12px] tracking-[0.12em] uppercase text-[#1C1B17]/60" style={{ fontFamily: "'Jost', sans-serif" }}>
@@ -341,6 +407,9 @@ function Contact() {
                     className="w-full mt-2 bg-transparent border-b border-[#1C1B17]/25 focus:border-[#B08D57] outline-none py-2 text-[15px] text-[#1C1B17]"
                     style={{ fontFamily: "'Jost', sans-serif" }}
                   />
+                  {fieldErrors.name && (
+                    <span className="block mt-1 text-[12px] text-[#5C2430]">{fieldErrors.name}</span>
+                  )}
                 </label>
                 <label className="block">
                   <span className="text-[12px] tracking-[0.12em] uppercase text-[#1C1B17]/60" style={{ fontFamily: "'Jost', sans-serif" }}>
@@ -354,6 +423,9 @@ function Contact() {
                     className="w-full mt-2 bg-transparent border-b border-[#1C1B17]/25 focus:border-[#B08D57] outline-none py-2 text-[15px] text-[#1C1B17]"
                     style={{ fontFamily: "'Jost', sans-serif" }}
                   />
+                  {fieldErrors.email && (
+                    <span className="block mt-1 text-[12px] text-[#5C2430]">{fieldErrors.email}</span>
+                  )}
                 </label>
               </div>
               <label className="block">
@@ -371,6 +443,9 @@ function Contact() {
                   <option>Hotel or hospitality</option>
                   <option>Restoration only</option>
                 </select>
+                {fieldErrors.type && (
+                  <span className="block mt-1 text-[12px] text-[#5C2430]">{fieldErrors.type}</span>
+                )}
               </label>
               <label className="block">
                 <span className="text-[12px] tracking-[0.12em] uppercase text-[#1C1B17]/60" style={{ fontFamily: "'Jost', sans-serif" }}>
@@ -384,13 +459,17 @@ function Contact() {
                   className="w-full mt-2 bg-transparent border-b border-[#1C1B17]/25 focus:border-[#B08D57] outline-none py-2 text-[15px] text-[#1C1B17] resize-none"
                   style={{ fontFamily: "'Jost', sans-serif" }}
                 />
+                {fieldErrors.message && (
+                  <span className="block mt-1 text-[12px] text-[#5C2430]">{fieldErrors.message}</span>
+                )}
               </label>
               <button
                 type="submit"
-                className="px-7 py-3 bg-[#1C1B17] text-[#F3ECDD] text-[13px] tracking-[0.14em] uppercase hover:bg-[#5C2430] transition-colors"
+                disabled={sending}
+                className="px-7 py-3 bg-[#1C1B17] text-[#F3ECDD] text-[13px] tracking-[0.14em] uppercase hover:bg-[#5C2430] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ fontFamily: "'Jost', sans-serif" }}
               >
-                Send enquiry
+                {sending ? "Sending…" : "Send enquiry"}
               </button>
             </form>
           )}
@@ -418,7 +497,7 @@ function Footer({ setPage }) {
           ))}
         </nav>
         <p className="text-[12px] text-[#F3ECDD]/40" style={{ fontFamily: "'Jost', sans-serif" }}>
-          &copy; 2026 Jr Interior. All rights reserved.
+          &copy; 2026 Thornbury &amp; Hale
         </p>
       </div>
     </footer>
